@@ -1,6 +1,6 @@
 import * as CodeMirror from 'codemirror'
 import { INITIAL, IRawTheme, StackElement } from 'monaco-textmate'
-import * as PCancelable from 'p-cancelable'
+import PCancelable from 'p-cancelable'
 import { Highlighter } from './Highlighter'
 
 export interface ITextmateThemePlus extends IRawTheme {
@@ -173,7 +173,7 @@ const updateCmTmBindings = (() => {
 const safeUpdateCM = (() => {
     const queue: CodeMirror.Editor[] = []
     const resolverCallbacks: WeakMap<CodeMirror.Editor, (success: boolean) => void> = new WeakMap()
-    let currentActivation: PCancelable.PCancelable<boolean>
+    let currentActivation: PCancelable<boolean>
     const proceed = async () => {
         const nextCM = queue[0]
         if (!nextCM) {
