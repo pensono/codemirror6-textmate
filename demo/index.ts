@@ -1,17 +1,11 @@
-import * as CodeMirror from 'codemirror'
+import { EditorView } from '@codemirror/view'
 import { loadWASM } from 'onigasm'
 
-import 'codemirror/lib/codemirror.css'
+// import 'codemirror/lib/codemirror.css'
 
 import {
-    activateLanguage,
-    addGrammar,
-
-    // [ optional | recommended ] Textmate themes in CodeMirror
-    addTheme,
-    ITextmateThemePlus,
-    // [ optional ] Grammar injections
-    linkInjections,
+    IRawGrammarSource,
+    textmateLanguage,
 } from 'codemirror-textmate'
 
 (async () => {
@@ -81,33 +75,19 @@ import {
 
     }
 
-    // To avoid FOUC, await for high priority languages to get ready (loading/compiling takes time, and it's an async process for which CM won't wait)
-    await Promise.all(Object.keys(grammars).map(async scopeName => {
-        const { loader, language, priority } = grammars[scopeName]
-
-        addGrammar(scopeName, loader)
-
-        if (language) {
-            const prom = activateLanguage(scopeName, language, priority)
-
-            // We must "wait" for high priority languages to load/compile before we render editor to avoid FOUC (Flash of Unstyled Content)
-            if (priority === 'now') {
-                await prom
-            }
-
-            // 'asap' although "awaitable", is a medium priority, and doesn't need to be waited for
-            // 'defer' doesn't support awaiting at all
-            return
-        }
-    }))
-
-    const editor = CodeMirror.fromTextArea(document.getElementById('cm-host') as HTMLTextAreaElement, {
-        lineNumbers: true,
+    const contents = (await import('./modeSamples/typescript')).default;
+    const extension = await textmateLanguage('source.js', import('./tm/grammars/JavaScript.tmLanguage.json') as unknown as IRawGrammarSource);
+    console.log(extension)
+    const editor = new EditorView({
+        parent: document.getElementById('cm-host'),
+        doc: contents,
+        extensions: [extension]
+        // lineNumbers: true,
         // If you know in advance a language is going to be set on CodeMirror editor and it isn't preloaded by setting the third argument 
         // to `activateLanguage` to 'now', the contents of the editor would start of and remain as unhighlighted text, until loading is complete
-        mode: 'typescript'
+        // mode: 'typescript'
     })
-    editor.setValue((await import('./modeSamples/typescript')).default)
+    // editor.setState(()
 
     // Everything should be working now!
 
@@ -121,27 +101,27 @@ import {
     //     /_/                                  
 
     // Using Textmate theme in CodeMirror
-    const themeX: ITextmateThemePlus = {
-        ...(await import('./tm/themes/OneDark.tmTheme.json')),
-        gutterSettings: {
-            background: '#1d1f25',
-            divider: '#1d1f25'
-        }
-    }
-    addTheme(themeX)
-    editor.setOption('theme', themeX.name)
+    // const themeX: ITextmateThemePlus = {
+    //     ...(await import('./tm/themes/OneDark.tmTheme.json')),
+    //     gutterSettings: {
+    //         background: '#1d1f25',
+    //         divider: '#1d1f25'
+    //     }
+    // }
+    // addTheme(themeX)
+    // editor.setOption('theme', themeX.name)
 
-    // Grammar injections, example code below will highlight css-in-js (styled-components, emotion)
-    // injections are "injections", they are not standalone-grammars, therefore no `activateLanguage`
-    addGrammar('source.css.styled', () => import('./tm/grammars/css.styled.tmLanguage.json') as any)
-    addGrammar('styled', () => import('./tm/grammars/styled.tmLanguage.json') as any)
+    // // Grammar injections, example code below will highlight css-in-js (styled-components, emotion)
+    // // injections are "injections", they are not standalone-grammars, therefore no `activateLanguage`
+    // addGrammar('source.css.styled', () => import('./tm/grammars/css.styled.tmLanguage.json') as any)
+    // addGrammar('styled', () => import('./tm/grammars/styled.tmLanguage.json') as any)
 
-    const affectedLanguages = await linkInjections('styled', ['source.ts', 'source.tsx', 'source.js', 'source.jsx'])
+    // const affectedLanguages = await linkInjections('styled', ['source.ts', 'source.tsx', 'source.js', 'source.jsx'])
 
-    // You must re-trigger tokenization to apply the update above (if applicable)
-    const activeMode = editor.getOption('mode')
-    if (affectedLanguages.indexOf(activeMode) > -1) {
-        // Resetting cm's mode re-triggers tokenization of entire document
-        editor.setOption('mode', activeMode)
-    }
+    // // You must re-trigger tokenization to apply the update above (if applicable)
+    // const activeMode = editor.getOption('mode')
+    // if (affectedLanguages.indexOf(activeMode) > -1) {
+    //     // Resetting cm's mode re-triggers tokenization of entire document
+    //     editor.setOption('mode', activeMode)
+    // }
 })()

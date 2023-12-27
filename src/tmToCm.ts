@@ -1,6 +1,6 @@
 import * as LRU from 'lru-cache'
 import { Theme } from 'monaco-textmate/dist/theme'
-import { ITextmateThemePlus } from '.'
+import type { ITextmateThemePlus } from '.'
 
 export enum CmToken {
     Atom = 'atom',
