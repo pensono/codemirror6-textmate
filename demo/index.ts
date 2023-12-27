@@ -26,7 +26,7 @@ import {
             /**
              * This the most resource efficient way to load grammars as of yet
              */
-            loader: () => import('./tm/grammars/Javascript.tmLanguage.json'),
+            loader: () => import('./tm/grammars/JavaScript.tmLanguage.json'),
 
             /**
              * Language ID is only necessary for languages you want to use as CodeMirror mode (eg: cm.setOption('mode', 'javascript'))
